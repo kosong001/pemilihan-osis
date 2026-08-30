@@ -111,11 +111,12 @@
       showScanError("Backend belum siap.");
       return;
     }
-    frame.contentWindow.postMessage(message, BACKEND_URL);
+    frame.contentWindow.postMessage(message, "*");
   }
 
   window.addEventListener("message", async function(event) {
-    if (event.origin !== "https://script.google.com") return;
+    const frame = $("bridge");
+    if (!frame || event.source !== frame.contentWindow) return;
     const data = event.data;
     if (!data || data.source !== "OSIS_APPS_SCRIPT") return;
 

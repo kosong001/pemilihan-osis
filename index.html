@@ -1,315 +1,152 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pemilihan OSIS</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <style>
-    :root {
-      --navy:#173b67; --bg:#f3f6fa; --card:#fff; --text:#1d2a3a;
-      --muted:#667085; --border:#d9e1ea; --good:#137333; --bad:#b42318;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:900px;margin:auto;padding:28px 18px 45px}
-    .head{text-align:center;margin-bottom:24px}
-    .head h1{margin:0 0 8px;font-size:30px}
-    .head p{margin:0;color:var(--muted)}
-    .badge{display:inline-block;margin-top:10px;padding:6px 10px;border-radius:999px;background:#eaf0f7;color:var(--navy);font-size:12px;font-weight:700}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
-    #reader{width:100%;max-width:580px;margin:0 auto}
-    .status{margin-top:16px;padding:13px 14px;border-radius:12px;border:1px solid var(--border);background:#f8fafc;text-align:center;min-height:46px;display:flex;align-items:center;justify-content:center}
-    .msg{display:none;margin-top:18px;padding:16px;border-radius:14px}
-    .error{background:#fff4f2;border:1px solid #f3b5ae;color:var(--bad)}
-    .success{background:#effaf2;border:1px solid #b7dfc3;color:var(--good)}
-    .section{display:none}
-    .candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-    .candidate{border:2px solid var(--border);border-radius:16px;padding:20px;text-align:center;cursor:pointer;background:#fff}
-    .candidate.selected{border-color:var(--navy);background:#eef6ff}
-    .candidate h2{margin:0 0 8px}
-    .candidate p{margin:5px 0}
-    .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
-    button{min-height:46px;border:0;border-radius:10px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer}
-    .primary{background:var(--navy);color:#fff}
-    .secondary{background:#eef2f6;color:var(--text);border:1px solid var(--border)}
-    button:disabled{opacity:.55;cursor:not-allowed}
-    .note{color:var(--muted);font-size:14px;line-height:1.5;text-align:center;margin-top:16px}
-    .big-check{font-size:60px;text-align:center}
-    #bridge{display:none}
-    @media(max-width:650px){.candidate-grid{grid-template-columns:1fr}.head h1{font-size:24px}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pemilihan OSIS</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+:root{--navy:#173b67;--bg:#f3f6fa;--card:#fff;--text:#1d2a3a;--muted:#667085;--border:#d9e1ea;--bad:#b42318}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:900px;margin:auto;padding:28px 18px 45px}
+.head{text-align:center;margin-bottom:24px} .head h1{margin:0 0 8px;font-size:30px} .head p{margin:0;color:var(--muted)}
+.badge{display:inline-block;margin-top:10px;padding:6px 10px;border-radius:999px;background:#eaf0f7;color:var(--navy);font-size:12px;font-weight:700}
+.card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+#reader{width:100%;max-width:580px;margin:0 auto} .status{margin-top:16px;padding:13px;border:1px solid var(--border);border-radius:12px;text-align:center}
+.section{display:none} .msg{display:none;margin-top:16px;padding:15px;border-radius:12px} .error{background:#fff4f2;border:1px solid #f3b5ae;color:var(--bad)}
+.candidate-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px} .candidate{border:2px solid var(--border);border-radius:16px;padding:20px;text-align:center;cursor:pointer}
+.candidate.selected{border-color:var(--navy);background:#eef6ff} .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{min-height:46px;border:0;border-radius:10px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer}
+.primary{background:var(--navy);color:#fff} .secondary{background:#eef2f6;color:var(--text);border:1px solid var(--border)} button:disabled{opacity:.55}
+@media(max-width:650px){.candidate-grid{grid-template-columns:1fr}.head h1{font-size:24px}}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="head">
-      <h1>PEMILIHAN KETUA & WAKIL OSIS</h1>
-      <p>SMP Negeri 12 Banjarmasin</p>
-      <span class="badge">TERHUBUNG KE GOOGLE APPS SCRIPT</span>
-    </div>
+<div class="wrap">
+<div class="head">
+<h1>PEMILIHAN KETUA & WAKIL OSIS</h1>
+<p>SMP Negeri 12 Banjarmasin</p>
+<span class="badge">BACKEND GOOGLE APPS SCRIPT</span>
+</div>
 
-    <div id="scanSection" class="card">
-      <h2 style="text-align:center;margin-top:0">SCAN QR CODE PEMILIH</h2>
-      <p style="text-align:center;color:var(--muted)">Arahkan QR Code siswa ke kamera laptop.</p>
-      <div id="reader"></div>
-      <div id="status" class="status">Menyiapkan kamera…</div>
-      <div id="scanError" class="msg error"></div>
-      <div class="actions">
-        <button id="retry" class="secondary" type="button">Aktifkan / Muat Ulang Kamera</button>
-      </div>
-      <div class="note">Scanner kamera berjalan di GitHub Pages. Verifikasi siswa dan penyimpanan suara dilakukan oleh Google Apps Script.</div>
-    </div>
+<div id="scanSection" class="card">
+<h2 style="text-align:center">SCAN QR CODE PEMILIH</h2>
+<p style="text-align:center;color:var(--muted)">Arahkan QR Code siswa ke kamera laptop.</p>
+<div id="reader"></div>
+<div id="status" class="status">Menyiapkan kamera…</div>
+<div id="scanError" class="msg error"></div>
+<div class="actions"><button id="retry" class="secondary">Aktifkan / Muat Ulang Kamera</button></div>
+</div>
 
-    <div id="voteSection" class="card section">
-      <div id="studentBox"></div>
-      <hr>
-      <h2 style="text-align:center">PILIH PASLON</h2>
-      <div id="candidateGrid" class="candidate-grid"></div>
-      <div id="voteError" class="msg error"></div>
-      <div class="actions">
-        <button id="voteBtn" class="primary" type="button">KONFIRMASI PILIHAN</button>
-        <button id="backScan" class="secondary" type="button">BATAL / KEMBALI</button>
-      </div>
-    </div>
+<div id="voteSection" class="card section">
+<div id="studentBox"></div><hr>
+<h2 style="text-align:center">PILIH PASLON</h2>
+<div id="candidateGrid" class="candidate-grid"></div>
+<div id="voteError" class="msg error"></div>
+<div class="actions">
+<button id="voteBtn" class="primary">KONFIRMASI PILIHAN</button>
+<button id="backScan" class="secondary">BATAL / KEMBALI</button>
+</div>
+</div>
 
-    <div id="doneSection" class="card section">
-      <div class="big-check">✅</div>
-      <h2 style="text-align:center">SUARA ANDA TELAH TERCATAT</h2>
-      <p id="doneText" style="text-align:center"></p>
-      <div class="actions">
-        <button id="again" class="primary" type="button">SCAN PEMILIH BERIKUTNYA</button>
-      </div>
-    </div>
-
-    <iframe id="bridge" src="https://script.google.com/macros/s/AKfycbwVgZiEdIXhELM4T5hf6o17SvKH1dKLWjIAANuA9-P48Ud_2wDMH2Hyzd4-zCs6L_cZ/exec" title="Backend Bridge"></iframe>
-  </div>
+<div id="doneSection" class="card section">
+<h2 style="text-align:center">✅ SUARA ANDA TELAH TERCATAT</h2>
+<p style="text-align:center">Terima kasih telah menggunakan hak pilih.</p>
+<div class="actions"><button id="again" class="primary">SCAN PEMILIH BERIKUTNYA</button></div>
+</div>
+</div>
 
 <script>
-  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwVgZiEdIXhELM4T5hf6o17SvKH1dKLWjIAANuA9-P48Ud_2wDMH2Hyzd4-zCs6L_cZ/exec';
-  const state = {
-    scanner:null, running:false, waiting:false,
-    activeToken:null, selectedPaslon:null, activeStudent:null
+const BACKEND = 'https://script.google.com/macros/s/AKfycbwVgZiEdIXhELM4T5hf6o17SvKH1dKLWjIAANuA9-P48Ud_2wDMH2Hyzd4-zCs6L_cZ/exec';
+let scanner=null, running=false, activeToken=null, selectedPaslon=null, activeStudent=null, busy=false;
+
+const $=id=>document.getElementById(id);
+function setStatus(t){$("status").textContent=t}
+function showScanError(t){$("scanError").textContent=t;$("scanError").style.display="block"}
+function clearScanError(){$("scanError").style.display="none"}
+function showVoteError(t){$("voteError").textContent=t;$("voteError").style.display="block"}
+function clearVoteError(){$("voteError").style.display="none"}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+function api(action, params, done) {
+  const callback = "osisCb_" + Date.now() + "_" + Math.floor(Math.random()*10000);
+  const script = document.createElement("script");
+  const q = new URLSearchParams({ action, callback, _: Date.now(), ...params });
+  window[callback] = function(result) {
+    try { done(result); }
+    finally {
+      delete window[callback];
+      script.remove();
+    }
   };
+  script.onerror = function() {
+    delete window[callback];
+    script.remove();
+    done({ok:false,message:"Tidak dapat terhubung ke Google Apps Script."});
+  };
+  script.src = BACKEND + "?" + q.toString();
+  document.body.appendChild(script);
+}
 
-  const $ = id => document.getElementById(id);
+async function stopScanner(){
+  if(scanner && running){try{await scanner.stop()}catch(e){} try{scanner.clear()}catch(e){}}
+  running=false;
+}
 
-  function setStatus(text) { $("status").textContent = text; }
-  function showScanError(text) {
-    $("scanError").textContent = text;
-    $("scanError").style.display = "block";
-  }
-  function clearScanError() { $("scanError").style.display = "none"; }
-  function showVoteError(text) {
-    $("voteError").textContent = text;
-    $("voteError").style.display = "block";
-  }
-  function clearVoteError() { $("voteError").style.display = "none"; }
+async function startScanner(){
+  clearScanError(); $("reader").innerHTML=""; setStatus("Meminta akses kamera…");
+  if(typeof Html5Qrcode==="undefined"){showScanError("Library scanner belum termuat. Pastikan internet aktif.");return}
+  scanner=new Html5Qrcode("reader");
+  try{
+    await scanner.start({facingMode:"environment"},{fps:10,qrbox:(w,h)=>{const s=Math.max(180,Math.min(300,Math.floor(Math.min(w,h)*.68)));return{width:s,height:s}},aspectRatio:1},
+      async text=>{
+        if(!running || busy) return;
+        busy=true; await stopScanner(); setStatus("QR terbaca. Memverifikasi pemilih…");
+        api("cekPemilih",{token:String(text).trim()},result=>{
+          busy=false;
+          if(!result.ok){showScanError(result.message||"Pemilih ditolak.");setStatus("Pemilih tidak dapat diverifikasi.");return}
+          activeStudent=result; activeToken=result.token;
+          $("scanSection").style.display="none"; $("voteSection").style.display="block";
+          $("studentBox").innerHTML=`<div style="text-align:center"><h2>✅ PEMILIH TERVERIFIKASI</h2><p style="font-size:20px;font-weight:700">${esc(result.nama)}</p><p style="color:#667085">Kelas: ${esc(result.kelas)} · NIS: ${esc(result.nis)}</p></div>`;
+          api("getPaslon",{},r=>{ if(!r.ok){showVoteError(r.message||"Gagal mengambil paslon.");return} renderCandidates(r.data||[]) });
+        });
+      },()=>{});
+    running=true; busy=false; setStatus("✅ Kamera aktif. Arahkan QR Code ke kotak scanner.");
+  }catch(e){showScanError("Kamera tidak dapat digunakan. Pastikan izin kamera diizinkan.");setStatus("Gagal mengaktifkan kamera.")}
+}
 
-  function sendToBackend(message) {
-    const frame = $("bridge");
-    if (!frame || !frame.contentWindow) {
-      showScanError("Backend belum siap.");
-      return;
-    }
-    frame.contentWindow.postMessage(message, "*");
-  }
-
-  window.addEventListener("message", async function(event) {
-    const frame = $("bridge");
-    if (!frame || event.source !== frame.contentWindow) return;
-    const data = event.data;
-    if (!data || data.source !== "OSIS_APPS_SCRIPT") return;
-
-    if (data.action === "cekPemilihResult") {
-      if (!data.result || !data.result.ok) {
-        await backToScanWithMessage(data.result?.message || "Pemilih tidak dapat diverifikasi.", true);
-        return;
-      }
-
-      state.activeStudent = data.result;
-      state.activeToken = data.result.token;
-      $("scanSection").style.display = "none";
-      $("voteSection").style.display = "block";
-      $("studentBox").innerHTML = `
-        <div style="text-align:center">
-          <h2 style="margin-bottom:7px">✅ PEMILIH TERVERIFIKASI</h2>
-          <p style="font-size:20px;font-weight:700;margin:4px">${escapeHtml(data.result.nama)}</p>
-          <p style="margin:4px;color:#667085">Kelas: ${escapeHtml(data.result.kelas)} · NIS: ${escapeHtml(data.result.nis)}</p>
-        </div>`;
-      clearVoteError();
-      sendToBackend({action:"getPaslon"});
-      return;
-    }
-
-    if (data.action === "getPaslonResult") {
-      renderCandidates(Array.isArray(data.result) ? data.result : []);
-      return;
-    }
-
-    if (data.action === "simpanSuaraResult") {
-      if (!data.result || !data.result.ok) {
-        showVoteError(data.result?.message || "Suara gagal disimpan.");
-        return;
-      }
-      $("voteSection").style.display = "none";
-      $("doneSection").style.display = "block";
-      $("doneText").textContent = "Pilihan berhasil dicatat. Silakan tinggalkan bilik suara.";
-      return;
-    }
-
-    if (data.action === "error") {
-      showScanError(data.message || "Terjadi kesalahan pada backend.");
-    }
+function renderCandidates(list){
+  const grid=$("candidateGrid"); grid.innerHTML=""; selectedPaslon=null;
+  list.forEach(p=>{
+    const el=document.createElement("div"); el.className="candidate";
+    el.innerHTML=`<div style="color:#667085">PASLON</div><h2>${esc(p.nomor)}</h2><p><strong>${esc(p.ketua)}</strong></p><p>&amp;</p><p><strong>${esc(p.wakil)}</strong></p><p style="color:#667085">${esc(p.visi)}</p>`;
+    el.onclick=()=>{document.querySelectorAll(".candidate").forEach(x=>x.classList.remove("selected"));el.classList.add("selected");selectedPaslon=p.nomor;clearVoteError()};
+    grid.appendChild(el);
   });
+}
 
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, ch => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[ch]));
-  }
+function resetToScan(){
+  $("voteSection").style.display="none"; $("doneSection").style.display="none"; $("scanSection").style.display="block";
+  $("voteBtn").disabled=false; activeToken=null;activeStudent=null;selectedPaslon=null;busy=false;clearVoteError();clearScanError();
+  setTimeout(startScanner,150);
+}
 
-  async function stopScanner() {
-    if (state.scanner && state.running) {
-      try { await state.scanner.stop(); } catch(e) {}
-      try { state.scanner.clear(); } catch(e) {}
-    }
-    state.running = false;
-  }
+$("retry").onclick=async()=>{await stopScanner();startScanner()};
+$("backScan").onclick=async()=>{await stopScanner();resetToScan()};
+$("again").onclick=async()=>{await stopScanner();resetToScan()};
 
-  async function startScanner() {
-    clearScanError();
-    $("reader").innerHTML = "";
-    setStatus("Meminta akses kamera…");
-
-    if (typeof Html5Qrcode === "undefined") {
-      showScanError("Library scanner belum termuat. Pastikan internet aktif.");
-      setStatus("Scanner belum siap.");
-      return;
-    }
-
-    state.scanner = new Html5Qrcode("reader");
-
-    try {
-      await state.scanner.start(
-        {facingMode:"environment"},
-        {
-          fps:10,
-          qrbox:(w,h)=>{
-            const size = Math.max(180, Math.min(300, Math.floor(Math.min(w,h)*0.68)));
-            return {width:size,height:size};
-          },
-          aspectRatio:1
-        },
-        async decodedText => {
-          if (!state.running || state.waiting) return;
-          state.waiting = true;
-          await stopScanner();
-          setStatus("QR terbaca. Memverifikasi pemilih…");
-          sendToBackend({action:"cekPemilih", token:String(decodedText).trim()});
-        },
-        ()=>{}
-      );
-      state.running = true;
-      state.waiting = false;
-      setStatus("✅ Kamera aktif. Arahkan QR Code ke kotak scanner.");
-    } catch(err) {
-      console.error(err);
-      let msg = "Kamera tidak dapat digunakan.";
-      if (err?.name === "NotAllowedError") msg += " Izin kamera ditolak.";
-      else if (err?.name === "NotFoundError") msg += " Kamera tidak ditemukan.";
-      else msg += " Pastikan dibuka melalui HTTPS dan gunakan Chrome.";
-      showScanError(msg);
-      setStatus("Gagal mengaktifkan kamera.");
-    }
-  }
-
-  function renderCandidates(list) {
-    const grid = $("candidateGrid");
-    grid.innerHTML = "";
-    state.selectedPaslon = null;
-
-    list.forEach(p => {
-      const el = document.createElement("div");
-      el.className = "candidate";
-      el.innerHTML = `
-        <div style="color:#667085">PASLON</div>
-        <h2>${escapeHtml(p.nomor)}</h2>
-        <p><strong>${escapeHtml(p.ketua)}</strong></p>
-        <p>&amp;</p>
-        <p><strong>${escapeHtml(p.wakil)}</strong></p>
-        <p style="color:#667085;margin-top:12px">${escapeHtml(p.visi)}</p>`;
-      el.addEventListener("click", () => {
-        document.querySelectorAll(".candidate").forEach(x => x.classList.remove("selected"));
-        el.classList.add("selected");
-        state.selectedPaslon = p.nomor;
-        clearVoteError();
-      });
-      grid.appendChild(el);
-    });
-
-    if (!list.length) showVoteError("Data paslon belum tersedia.");
-  }
-
-  function confirmVote() {
-    clearVoteError();
-    if (!state.activeToken || !state.selectedPaslon) {
-      showVoteError("Silakan pilih salah satu paslon terlebih dahulu.");
-      return;
-    }
-    const nomor = state.selectedPaslon;
-    if (!confirm(`Anda memilih PASLON ${nomor}.\n\nApakah Anda yakin?`)) return;
-
-    $("voteBtn").disabled = true;
-    sendToBackend({
-      action:"simpanSuara",
-      token:state.activeToken,
-      paslon:nomor,
-      bilik:"BILIK-01"
-    });
-  }
-
-  async function backToScanWithMessage(message, error=false) {
-    await stopScanner();
-    $("voteSection").style.display = "none";
-    $("doneSection").style.display = "none";
-    $("scanSection").style.display = "block";
-    state.activeToken = null;
-    state.activeStudent = null;
-    state.selectedPaslon = null;
-    state.waiting = false;
-    if (error) showScanError(message);
-    else clearScanError();
-    setStatus(message || "Siap scan.");
-    $("voteBtn").disabled = false;
-    setTimeout(() => startScanner(), 2500);
-  }
-
-  async function backToScan() {
-    await stopScanner();
-    $("voteSection").style.display = "none";
-    $("doneSection").style.display = "none";
-    $("scanSection").style.display = "block";
-    state.activeToken = null;
-    state.activeStudent = null;
-    state.selectedPaslon = null;
-    $("voteBtn").disabled = false;
-    clearScanError();
-    clearVoteError();
-    setStatus("Menyiapkan kamera…");
-    setTimeout(() => startScanner(), 150);
-  }
-
-  $("retry").addEventListener("click", async () => {
-    await backToScan();
+$("voteBtn").onclick=()=>{
+  clearVoteError();
+  if(!selectedPaslon){showVoteError("Silakan pilih salah satu paslon terlebih dahulu.");return}
+  if(!confirm("Anda memilih PASLON "+selectedPaslon+".\n\nApakah Anda yakin?")) return;
+  $("voteBtn").disabled=true;
+  api("simpanSuara",{token:activeToken,paslon:selectedPaslon,bilik:"BILIK-01"},result=>{
+    if(!result.ok){$("voteBtn").disabled=false;showVoteError(result.message||"Suara gagal disimpan.");return}
+    $("voteSection").style.display="none";$("doneSection").style.display="block";
   });
-  $("voteBtn").addEventListener("click", confirmVote);
-  $("backScan").addEventListener("click", backToScan);
-  $("again").addEventListener("click", backToScan);
+};
 
-  window.addEventListener("load", () => {
-    setStatus("Menyiapkan koneksi backend…");
-    setTimeout(() => startScanner(), 800);
-  });
+window.addEventListener("load",()=>setTimeout(startScanner,500));
 </script>
 </body>
 </html>

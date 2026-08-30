@@ -3,20 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Prototype Pemilihan OSIS</title>
+  <title>Pemilihan OSIS</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    :root{
-      --navy:#173b67;
-      --bg:#f3f6fa;
-      --card:#fff;
-      --text:#1d2a3a;
-      --muted:#667085;
-      --border:#d9e1ea;
-      --good:#137333;
-      --bad:#b42318;
-      --goodbg:#effaf2;
-      --badbg:#fff4f2;
+    :root {
+      --navy:#173b67; --bg:#f3f6fa; --card:#fff; --text:#1d2a3a;
+      --muted:#667085; --border:#d9e1ea; --good:#137333; --bad:#b42318;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
@@ -28,261 +20,295 @@
     .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
     #reader{width:100%;max-width:580px;margin:0 auto}
     .status{margin-top:16px;padding:13px 14px;border-radius:12px;border:1px solid var(--border);background:#f8fafc;text-align:center;min-height:46px;display:flex;align-items:center;justify-content:center}
-    .result{display:none;margin-top:18px;padding:20px;border-radius:15px;border:2px solid #b7dfc3;background:var(--goodbg)}
-    .result h2{margin:0 0 15px;text-align:center}
-    .row{display:flex;justify-content:space-between;gap:15px;padding:8px 0;border-bottom:1px dashed #c9d7ce}
-    .row:last-child{border-bottom:0}
-    .label{color:var(--muted)}
-    .value{font-weight:700;text-align:right}
-    .message{display:none;margin-top:18px;padding:16px;border-radius:14px}
-    .message.error{background:var(--badbg);border:1px solid #f3b5ae;color:var(--bad)}
+    .msg{display:none;margin-top:18px;padding:16px;border-radius:14px}
+    .error{background:#fff4f2;border:1px solid #f3b5ae;color:var(--bad)}
+    .success{background:#effaf2;border:1px solid #b7dfc3;color:var(--good)}
+    .section{display:none}
+    .candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .candidate{border:2px solid var(--border);border-radius:16px;padding:20px;text-align:center;cursor:pointer;background:#fff}
+    .candidate.selected{border-color:var(--navy);background:#eef6ff}
+    .candidate h2{margin:0 0 8px}
+    .candidate p{margin:5px 0}
     .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
     button{min-height:46px;border:0;border-radius:10px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer}
     .primary{background:var(--navy);color:#fff}
     .secondary{background:#eef2f6;color:var(--text);border:1px solid var(--border)}
     button:disabled{opacity:.55;cursor:not-allowed}
-    .section{display:none}
-    .candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-    .candidate{border:2px solid var(--border);border-radius:16px;padding:20px;text-align:center;cursor:pointer;background:#fff}
-    .candidate.selected{border-color:var(--navy);background:#eef6ff}
-    .candidate .num{font-size:14px;color:var(--muted);margin-bottom:8px}
-    .candidate h2{margin:0 0 8px}
-    .candidate p{margin:5px 0}
-    .success{text-align:center}
-    .success .icon{font-size:60px}
     .note{color:var(--muted);font-size:14px;line-height:1.5;text-align:center;margin-top:16px}
-    @media (max-width:650px){.candidate-grid{grid-template-columns:1fr}.head h1{font-size:24px}}
+    .big-check{font-size:60px;text-align:center}
+    #bridge{display:none}
+    @media(max-width:650px){.candidate-grid{grid-template-columns:1fr}.head h1{font-size:24px}}
   </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="head">
-    <h1>PEMILIHAN KETUA & WAKIL OSIS</h1>
-    <p>SMP Negeri 12 Banjarmasin</p>
-    <span class="badge">PROTOTYPE ONLINE — DATA UJI 3 SISWA / 2 PASLON</span>
-  </div>
-
-  <div id="scanSection" class="card">
-    <h2 style="text-align:center;margin-top:0">SCAN QR CODE PEMILIH</h2>
-    <p style="text-align:center;color:var(--muted)">Arahkan QR Code siswa ke kamera laptop.</p>
-    <div id="reader"></div>
-    <div id="status" class="status">Menyiapkan kamera…</div>
-    <div id="scanError" class="message error"></div>
-    <div class="actions">
-      <button id="retry" class="secondary" type="button">Aktifkan / Muat Ulang Kamera</button>
+  <div class="wrap">
+    <div class="head">
+      <h1>PEMILIHAN KETUA & WAKIL OSIS</h1>
+      <p>SMP Negeri 12 Banjarmasin</p>
+      <span class="badge">TERHUBUNG KE GOOGLE APPS SCRIPT</span>
     </div>
-    <div class="note">
-      Halaman ini sudah dirancang untuk dijalankan sebagai website HTTPS.
-      Data siswa masih tersimpan di kode browser untuk percobaan dan belum memakai Google Sheets.
-    </div>
-  </div>
 
-  <div id="voteSection" class="card section">
-    <div id="studentBox"></div>
-    <hr>
-    <h2 style="text-align:center">PILIH PASLON</h2>
-    <div id="candidateGrid" class="candidate-grid"></div>
-    <div class="actions">
-      <button id="voteBtn" class="primary" type="button">KONFIRMASI PILIHAN</button>
-      <button id="backScan" class="secondary" type="button">BATAL / KEMBALI</button>
-    </div>
-  </div>
-
-  <div id="doneSection" class="card section">
-    <div class="success">
-      <div class="icon">✅</div>
-      <h2>SUARA ANDA TELAH TERCATAT</h2>
-      <p id="doneText">Terima kasih telah menggunakan hak pilih.</p>
+    <div id="scanSection" class="card">
+      <h2 style="text-align:center;margin-top:0">SCAN QR CODE PEMILIH</h2>
+      <p style="text-align:center;color:var(--muted)">Arahkan QR Code siswa ke kamera laptop.</p>
+      <div id="reader"></div>
+      <div id="status" class="status">Menyiapkan kamera…</div>
+      <div id="scanError" class="msg error"></div>
       <div class="actions">
-        <button id="again" class="primary" type="button">KEMBALI KE SCAN</button>
+        <button id="retry" class="secondary" type="button">Aktifkan / Muat Ulang Kamera</button>
+      </div>
+      <div class="note">Scanner kamera berjalan di GitHub Pages. Verifikasi siswa dan penyimpanan suara dilakukan oleh Google Apps Script.</div>
+    </div>
+
+    <div id="voteSection" class="card section">
+      <div id="studentBox"></div>
+      <hr>
+      <h2 style="text-align:center">PILIH PASLON</h2>
+      <div id="candidateGrid" class="candidate-grid"></div>
+      <div id="voteError" class="msg error"></div>
+      <div class="actions">
+        <button id="voteBtn" class="primary" type="button">KONFIRMASI PILIHAN</button>
+        <button id="backScan" class="secondary" type="button">BATAL / KEMBALI</button>
       </div>
     </div>
+
+    <div id="doneSection" class="card section">
+      <div class="big-check">✅</div>
+      <h2 style="text-align:center">SUARA ANDA TELAH TERCATAT</h2>
+      <p id="doneText" style="text-align:center"></p>
+      <div class="actions">
+        <button id="again" class="primary" type="button">SCAN PEMILIH BERIKUTNYA</button>
+      </div>
+    </div>
+
+    <iframe id="bridge" src="https://script.google.com/macros/s/AKfycbwVgZiEdIXhELM4T5hf6o17SvKH1dKLWjIAANuA9-P48Ud_2wDMH2Hyzd4-zCs6L_cZ/exec" title="Backend Bridge"></iframe>
   </div>
-</div>
 
 <script>
-  // DATA UJI. Nanti bagian ini akan diganti menjadi data dari backend/Google Sheets.
-  const PEMILIH = {
-    "OSIS12-A7K9P2": {id:"0001", nis:"24001", nama:"Ahmad", kelas:"VII-A", status:"BELUM"},
-    "OSIS12-M4L8Q1": {id:"0002", nis:"24002", nama:"Budi", kelas:"VII-A", status:"BELUM"},
-    "OSIS12-X2N5R8": {id:"0003", nis:"24003", nama:"Citra", kelas:"VII-B", status:"BELUM"}
-  };
-
-  const PASLON = [
-    {nomor:"01", ketua:"Andi", wakil:"Siti", visi:"OSIS aktif dan berkarakter"},
-    {nomor:"02", ketua:"Bima", wakil:"Rina", visi:"OSIS kreatif dan berprestasi"}
-  ];
-
+  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwVgZiEdIXhELM4T5hf6o17SvKH1dKLWjIAANuA9-P48Ud_2wDMH2Hyzd4-zCs6L_cZ/exec';
   const state = {
-    scanner:null,
-    running:false,
-    activeToken:null,
-    selectedPaslon:null
+    scanner:null, running:false, waiting:false,
+    activeToken:null, selectedPaslon:null, activeStudent:null
   };
 
   const $ = id => document.getElementById(id);
 
-  function setStatus(text){ $("status").textContent = text; }
-
-  function showError(text){
+  function setStatus(text) { $("status").textContent = text; }
+  function showScanError(text) {
     $("scanError").textContent = text;
     $("scanError").style.display = "block";
   }
+  function clearScanError() { $("scanError").style.display = "none"; }
+  function showVoteError(text) {
+    $("voteError").textContent = text;
+    $("voteError").style.display = "block";
+  }
+  function clearVoteError() { $("voteError").style.display = "none"; }
 
-  function hideError(){ $("scanError").style.display = "none"; }
+  function sendToBackend(message) {
+    const frame = $("bridge");
+    if (!frame || !frame.contentWindow) {
+      showScanError("Backend belum siap.");
+      return;
+    }
+    frame.contentWindow.postMessage(message, BACKEND_URL);
+  }
 
-  async function stopScanner(){
-    if(state.scanner && state.running){
-      try{ await state.scanner.stop(); }catch(e){}
+  window.addEventListener("message", async function(event) {
+    if (event.origin !== "https://script.google.com") return;
+    const data = event.data;
+    if (!data || data.source !== "OSIS_APPS_SCRIPT") return;
+
+    if (data.action === "cekPemilihResult") {
+      if (!data.result || !data.result.ok) {
+        await backToScanWithMessage(data.result?.message || "Pemilih tidak dapat diverifikasi.", true);
+        return;
+      }
+
+      state.activeStudent = data.result;
+      state.activeToken = data.result.token;
+      $("scanSection").style.display = "none";
+      $("voteSection").style.display = "block";
+      $("studentBox").innerHTML = `
+        <div style="text-align:center">
+          <h2 style="margin-bottom:7px">✅ PEMILIH TERVERIFIKASI</h2>
+          <p style="font-size:20px;font-weight:700;margin:4px">${escapeHtml(data.result.nama)}</p>
+          <p style="margin:4px;color:#667085">Kelas: ${escapeHtml(data.result.kelas)} · NIS: ${escapeHtml(data.result.nis)}</p>
+        </div>`;
+      clearVoteError();
+      sendToBackend({action:"getPaslon"});
+      return;
+    }
+
+    if (data.action === "getPaslonResult") {
+      renderCandidates(Array.isArray(data.result) ? data.result : []);
+      return;
+    }
+
+    if (data.action === "simpanSuaraResult") {
+      if (!data.result || !data.result.ok) {
+        showVoteError(data.result?.message || "Suara gagal disimpan.");
+        return;
+      }
+      $("voteSection").style.display = "none";
+      $("doneSection").style.display = "block";
+      $("doneText").textContent = "Pilihan berhasil dicatat. Silakan tinggalkan bilik suara.";
+      return;
+    }
+
+    if (data.action === "error") {
+      showScanError(data.message || "Terjadi kesalahan pada backend.");
+    }
+  });
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[ch]));
+  }
+
+  async function stopScanner() {
+    if (state.scanner && state.running) {
+      try { await state.scanner.stop(); } catch(e) {}
+      try { state.scanner.clear(); } catch(e) {}
     }
     state.running = false;
   }
 
-  async function startScanner(){
-    hideError();
+  async function startScanner() {
+    clearScanError();
     $("reader").innerHTML = "";
     setStatus("Meminta akses kamera…");
 
-    if(location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1"){
-      showError("Kamera browser membutuhkan HTTPS atau localhost. Upload folder ini ke hosting HTTPS untuk pengujian online.");
-      setStatus("Kamera belum aktif.");
-      return;
-    }
-
-    if(typeof Html5Qrcode === "undefined"){
-      showError("Library QR belum termuat. Pastikan internet aktif lalu refresh.");
+    if (typeof Html5Qrcode === "undefined") {
+      showScanError("Library scanner belum termuat. Pastikan internet aktif.");
       setStatus("Scanner belum siap.");
       return;
     }
 
     state.scanner = new Html5Qrcode("reader");
 
-    try{
+    try {
       await state.scanner.start(
         {facingMode:"environment"},
         {
           fps:10,
           qrbox:(w,h)=>{
-            const size=Math.max(180,Math.min(300,Math.floor(Math.min(w,h)*0.68)));
+            const size = Math.max(180, Math.min(300, Math.floor(Math.min(w,h)*0.68)));
             return {width:size,height:size};
           },
           aspectRatio:1
         },
-        async decodedText=>{
-          if(!state.running) return;
-          state.running=false;
-          const token=String(decodedText).trim();
+        async decodedText => {
+          if (!state.running || state.waiting) return;
+          state.waiting = true;
           await stopScanner();
-          prosesQR(token);
+          setStatus("QR terbaca. Memverifikasi pemilih…");
+          sendToBackend({action:"cekPemilih", token:String(decodedText).trim()});
         },
         ()=>{}
       );
-      state.running=true;
+      state.running = true;
+      state.waiting = false;
       setStatus("✅ Kamera aktif. Arahkan QR Code ke kotak scanner.");
-    }catch(err){
+    } catch(err) {
       console.error(err);
-      const name=err?.name || "";
-      let text="Kamera tidak dapat digunakan.";
-      if(name==="NotAllowedError") text+=" Izin kamera ditolak. Pilih Allow/Izinkan.";
-      else if(name==="NotFoundError") text+=" Kamera tidak ditemukan.";
-      else text+=" Pastikan halaman dibuka melalui HTTPS dan gunakan Chrome.";
-      showError(text);
+      let msg = "Kamera tidak dapat digunakan.";
+      if (err?.name === "NotAllowedError") msg += " Izin kamera ditolak.";
+      else if (err?.name === "NotFoundError") msg += " Kamera tidak ditemukan.";
+      else msg += " Pastikan dibuka melalui HTTPS dan gunakan Chrome.";
+      showScanError(msg);
       setStatus("Gagal mengaktifkan kamera.");
     }
   }
 
-  function prosesQR(token){
-    const p=PEMILIH[token];
+  function renderCandidates(list) {
+    const grid = $("candidateGrid");
+    grid.innerHTML = "";
+    state.selectedPaslon = null;
 
-    if(!p){
-      showError("QR Code tidak terdaftar dalam data uji.");
-      setStatus("QR ditolak.");
-      setTimeout(()=>{hideError();startScanner()},1800);
-      return;
-    }
-
-    if(p.status==="SUDAH"){
-      showError(`${p.nama} sudah menggunakan hak pilih.`);
-      setStatus("Pemilih sudah memilih.");
-      setTimeout(()=>{hideError();startScanner()},2200);
-      return;
-    }
-
-    state.activeToken=token;
-    state.selectedPaslon=null;
-
-    $("scanSection").style.display="none";
-    $("voteSection").style.display="block";
-
-    $("studentBox").innerHTML=`
-      <div style="text-align:center">
-        <h2 style="margin-bottom:7px">✅ PEMILIH TERVERIFIKASI</h2>
-        <p style="font-size:20px;font-weight:700;margin:4px">${p.nama}</p>
-        <p style="margin:4px;color:#667085">Kelas: ${p.kelas} · NIS: ${p.nis}</p>
-      </div>
-    `;
-
-    renderCandidates();
-  }
-
-  function renderCandidates(){
-    const grid=$("candidateGrid");
-    grid.innerHTML="";
-    PASLON.forEach(p=>{
-      const el=document.createElement("div");
-      el.className="candidate";
-      el.innerHTML=`
-        <div class="num">PASLON</div>
-        <h2>${p.nomor}</h2>
-        <p><strong>${p.ketua}</strong></p>
+    list.forEach(p => {
+      const el = document.createElement("div");
+      el.className = "candidate";
+      el.innerHTML = `
+        <div style="color:#667085">PASLON</div>
+        <h2>${escapeHtml(p.nomor)}</h2>
+        <p><strong>${escapeHtml(p.ketua)}</strong></p>
         <p>&amp;</p>
-        <p><strong>${p.wakil}</strong></p>
-        <p style="color:#667085;margin-top:12px">${p.visi}</p>
-      `;
-      el.addEventListener("click",()=>{
-        document.querySelectorAll(".candidate").forEach(x=>x.classList.remove("selected"));
+        <p><strong>${escapeHtml(p.wakil)}</strong></p>
+        <p style="color:#667085;margin-top:12px">${escapeHtml(p.visi)}</p>`;
+      el.addEventListener("click", () => {
+        document.querySelectorAll(".candidate").forEach(x => x.classList.remove("selected"));
         el.classList.add("selected");
-        state.selectedPaslon=p.nomor;
+        state.selectedPaslon = p.nomor;
+        clearVoteError();
       });
       grid.appendChild(el);
     });
+
+    if (!list.length) showVoteError("Data paslon belum tersedia.");
   }
 
-  function confirmVote(){
-    if(!state.activeToken || !state.selectedPaslon){
-      alert("Silakan pilih salah satu paslon terlebih dahulu.");
+  function confirmVote() {
+    clearVoteError();
+    if (!state.activeToken || !state.selectedPaslon) {
+      showVoteError("Silakan pilih salah satu paslon terlebih dahulu.");
       return;
     }
-    const p=PEMILIH[state.activeToken];
-    const nomor=state.selectedPaslon;
-    if(!confirm(`Anda memilih PASLON ${nomor}.\\n\\nApakah Anda yakin?`)) return;
+    const nomor = state.selectedPaslon;
+    if (!confirm(`Anda memilih PASLON ${nomor}.\n\nApakah Anda yakin?`)) return;
 
-    // DEMO: simpan status di browser selama tab ini aktif.
-    p.status="SUDAH";
-
-    $("voteSection").style.display="none";
-    $("doneSection").style.display="block";
-    $("doneText").textContent=`Pilihan Paslon ${nomor} untuk pemilih ${p.nama} berhasil dicatat pada mode uji.`;
+    $("voteBtn").disabled = true;
+    sendToBackend({
+      action:"simpanSuara",
+      token:state.activeToken,
+      paslon:nomor,
+      bilik:"BILIK-01"
+    });
   }
 
-  async function backToScan(){
-    state.activeToken=null;
-    state.selectedPaslon=null;
-    $("doneSection").style.display="none";
-    $("voteSection").style.display="none";
-    $("scanSection").style.display="block";
-    await startScanner();
-  }
-
-  $("retry").addEventListener("click",async()=>{
+  async function backToScanWithMessage(message, error=false) {
     await stopScanner();
-    await startScanner();
-  });
-  $("voteBtn").addEventListener("click",confirmVote);
-  $("backScan").addEventListener("click",backToScan);
-  $("again").addEventListener("click",backToScan);
+    $("voteSection").style.display = "none";
+    $("doneSection").style.display = "none";
+    $("scanSection").style.display = "block";
+    state.activeToken = null;
+    state.activeStudent = null;
+    state.selectedPaslon = null;
+    state.waiting = false;
+    if (error) showScanError(message);
+    else clearScanError();
+    setStatus(message || "Siap scan.");
+    $("voteBtn").disabled = false;
+    setTimeout(() => startScanner(), 2500);
+  }
 
-  startScanner();
+  async function backToScan() {
+    await stopScanner();
+    $("voteSection").style.display = "none";
+    $("doneSection").style.display = "none";
+    $("scanSection").style.display = "block";
+    state.activeToken = null;
+    state.activeStudent = null;
+    state.selectedPaslon = null;
+    $("voteBtn").disabled = false;
+    clearScanError();
+    clearVoteError();
+    setStatus("Menyiapkan kamera…");
+    setTimeout(() => startScanner(), 150);
+  }
+
+  $("retry").addEventListener("click", async () => {
+    await backToScan();
+  });
+  $("voteBtn").addEventListener("click", confirmVote);
+  $("backScan").addEventListener("click", backToScan);
+  $("again").addEventListener("click", backToScan);
+
+  window.addEventListener("load", () => {
+    setStatus("Menyiapkan koneksi backend…");
+    setTimeout(() => startScanner(), 800);
+  });
 </script>
 </body>
 </html>
